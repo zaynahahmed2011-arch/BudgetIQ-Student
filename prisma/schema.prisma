@@ -1,19 +1,15 @@
 // BudgetIQ Student — Prisma schema
 //
-// Local dev runs on SQLite (zero setup). Every model here is written to be
-// Postgres-compatible: no SQLite-only types are used, so switching providers
-// later is just:
-//   1. change `provider = "sqlite"` -> `provider = "postgresql"` below
-//   2. point DATABASE_URL at a real Postgres instance
-//   3. `npx prisma migrate dev`
-// See README.md for the full migration note.
+// Runs on Postgres (Neon). `category` is still stored as a validated string
+// rather than a native Prisma enum — kept that way for portability, not
+// because it's required on this provider.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
