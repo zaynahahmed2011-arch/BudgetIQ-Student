@@ -75,12 +75,20 @@ export default function LandingPage() {
 
       <main className="flex-1">
         <section className="relative overflow-hidden px-4 pb-24 pt-16 md:px-8 md:pt-24">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -left-24 -top-24 size-72 rounded-full bg-accent/40 blur-2xl"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute right-0 top-40 size-64 rounded-full bg-secondary/50 blur-2xl"
+          />
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
-            <div>
-              <div className="mb-5 inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+            <div className="relative">
+              <div className="mb-5 inline-flex items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold text-accent-foreground">
                 <Sparkles className="size-3.5" /> Built for students, powered by AI
               </div>
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+              <h1 className="text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl">
                 Budgeting that talks back,
                 <br />
                 <span className="text-primary">not spreadsheets.</span>
@@ -109,7 +117,7 @@ export default function LandingPage() {
         <section id="features" className="border-t border-border bg-secondary/20 px-4 py-20 md:px-8">
           <div className="mx-auto max-w-6xl">
             <div className="mb-12 max-w-xl">
-              <h2 className="text-3xl font-bold tracking-tight">Everything a student budget needs</h2>
+              <h2 className="text-3xl font-black tracking-tight">Everything a student budget needs</h2>
               <p className="mt-3 text-muted-foreground">
                 No bloated features built for accountants. Just what actually helps you not run
                 out of money before the month ends.
@@ -117,8 +125,8 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {FEATURES.map((f) => (
-                <div key={f.title} className="rounded-2xl border border-border bg-card p-6">
-                  <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <div key={f.title} className="rounded-3xl border-2 border-border bg-card p-6">
+                  <div className="mb-4 flex size-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
                     <f.icon className="size-5" />
                   </div>
                   <h3 className="font-semibold">{f.title}</h3>
@@ -131,7 +139,7 @@ export default function LandingPage() {
 
         <section id="how-it-works" className="px-4 py-20 md:px-8">
           <div className="mx-auto max-w-6xl">
-            <h2 className="mb-12 text-3xl font-bold tracking-tight">How it works</h2>
+            <h2 className="mb-12 text-3xl font-black tracking-tight">How it works</h2>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {STEPS.map((s) => (
                 <div key={s.step}>
@@ -150,7 +158,7 @@ export default function LandingPage() {
         >
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">
+              <h2 className="text-3xl font-black tracking-tight">
                 Your money, distilled into one score.
               </h2>
               <p className="mt-3 text-muted-foreground">
@@ -176,7 +184,7 @@ export default function LandingPage() {
 
         <section className="px-4 py-20 md:px-8">
           <div className="mx-auto max-w-4xl rounded-3xl border border-border bg-gradient-to-br from-primary/10 to-transparent p-10 text-center">
-            <h2 className="text-3xl font-bold tracking-tight">Stop guessing where your money went.</h2>
+            <h2 className="text-3xl font-black tracking-tight">Stop guessing where your money went.</h2>
             <p className="mx-auto mt-3 max-w-md text-muted-foreground">
               Set up your budget in under a minute and let the AI handle the rest.
             </p>

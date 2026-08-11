@@ -26,7 +26,7 @@ export default async function ReportsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">Reports</h2>
+        <h2 className="text-2xl font-black tracking-tight">Reports</h2>
         <p className="text-sm text-muted-foreground">
           AI-generated weekly recaps and your financial health trend.
         </p>

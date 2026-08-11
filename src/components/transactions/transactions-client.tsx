@@ -121,15 +121,15 @@ export function TransactionsClient({
                 <div key={t.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <div
-                      className="flex size-9 shrink-0 items-center justify-center rounded-xl text-base"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-2xl text-base"
                       style={{
-                        background: `color-mix(in oklab, ${meta?.color ?? "var(--chart-9)"} 15%, transparent)`,
+                        background: `color-mix(in oklab, ${meta?.color ?? "var(--chart-9)"} 30%, transparent)`,
                       }}
                     >
                       {meta?.emoji ?? "✨"}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{t.description}</p>
+                      <p className="truncate text-sm font-semibold">{t.description}</p>
                       <p className="text-xs text-muted-foreground">
                         {t.category} · {formatDate(t.date)}
                       </p>

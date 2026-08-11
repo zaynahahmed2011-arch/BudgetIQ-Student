@@ -16,7 +16,7 @@ export default async function AssistantPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">AI Assistant</h2>
+        <h2 className="text-2xl font-black tracking-tight">AI Assistant</h2>
         <p className="text-sm text-muted-foreground">
           Your personal financial coach, grounded in your real numbers.
         </p>

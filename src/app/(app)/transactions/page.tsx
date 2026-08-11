@@ -19,7 +19,7 @@ export default async function TransactionsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">Transactions</h2>
+        <h2 className="text-2xl font-black tracking-tight">Transactions</h2>
         <p className="text-sm text-muted-foreground">
           Everything you&apos;ve logged, filterable by category.
         </p>

@@ -22,13 +22,13 @@ export function TransactionRow({
     <div className="flex items-center justify-between gap-3 py-2.5">
       <div className="flex min-w-0 items-center gap-3">
         <div
-          className="flex size-9 shrink-0 items-center justify-center rounded-xl text-base"
-          style={{ background: `color-mix(in oklab, ${meta?.color ?? "var(--chart-9)"} 15%, transparent)` }}
+          className="flex size-10 shrink-0 items-center justify-center rounded-2xl text-base"
+          style={{ background: `color-mix(in oklab, ${meta?.color ?? "var(--chart-9)"} 30%, transparent)` }}
         >
           {meta?.emoji ?? "✨"}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{description}</p>
+          <p className="truncate text-sm font-semibold">{description}</p>
           <p className="text-xs text-muted-foreground">
             {category} · {formatDate(date)}
           </p>

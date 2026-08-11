@@ -14,7 +14,7 @@ export default async function GoalsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">Savings Goals</h2>
+        <h2 className="text-2xl font-black tracking-tight">Savings Goals</h2>
         <p className="text-sm text-muted-foreground">
           Track what you&apos;re saving for and watch your progress grow.
         </p>
