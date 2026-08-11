@@ -5,7 +5,9 @@ chat with an AI financial coach grounded in your real numbers, track savings goa
 and watch a 0-100 Financial Health Score update as your habits change.
 
 **Stack**: Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Prisma ·
-NextAuth (Auth.js v5) · Anthropic Claude · Recharts
+Postgres (Neon) · NextAuth (Auth.js v5) · Anthropic Claude · Recharts
+
+**Live deployment**: https://budget-iq-student.vercel.app
 
 ## 1. Install dependencies
 
@@ -21,7 +23,10 @@ cp .env.example .env
 
 Then edit `.env`:
 
-- `DATABASE_URL` — already set to a local SQLite file (`file:./dev.db`, resolved relative to `prisma/schema.prisma`). Zero setup required.
+- `DATABASE_URL` — a Postgres connection string (e.g. from [Neon](https://neon.tech),
+  free tier). If using Neon, use the **pooled** connection string (host has a
+  `-pooler` suffix) — the unpooled one exhausts its connection limit quickly
+  under dev-server hot reload or serverless traffic.
 - `AUTH_SECRET` — generate one with `openssl rand -base64 32`.
 - `ANTHROPIC_API_KEY` — get a key at [console.anthropic.com](https://console.anthropic.com/).
   Without it, the app still runs: expense logging falls back to a simple keyword
@@ -35,7 +40,7 @@ npx prisma migrate dev
 npm run db:seed
 ```
 
-This creates `prisma/dev.db` and seeds a demo account:
+This applies migrations to your Postgres database and seeds a demo account:
 
 - **Email**: `demo@budgetiq.app`
 - **Password**: `password123`
@@ -63,30 +68,14 @@ src/lib/financial-score.ts  Financial Health Score formula
 src/lib/finance-data.ts     Server-side data aggregation shared by pages, chat, and reports
 ```
 
-## Switching to Postgres
+## Deploying
 
-The schema is written to be Postgres-compatible from day one (no SQLite-only types,
-category stored as a validated string rather than a native enum since SQLite has no
-enum support). To switch:
+The live deployment runs on Vercel, connected to this repo's `main` branch — every
+push auto-deploys. Production environment variables (`DATABASE_URL`, `AUTH_SECRET`,
+`ANTHROPIC_API_KEY`) are set in the Vercel project settings, not committed anywhere.
 
-1. In `prisma/schema.prisma`, change:
-   ```prisma
-   datasource db {
-     provider = "postgresql"   // was "sqlite"
-     url      = env("DATABASE_URL")
-   }
-   ```
-2. Point `DATABASE_URL` in `.env` at a real Postgres instance, e.g.:
-   ```
-   DATABASE_URL="postgresql://user:password@localhost:5432/budgetiq"
-   ```
-   (A free-tier host like [Neon](https://neon.tech) or [Supabase](https://supabase.com)
-   works with zero local install.)
-3. Re-run migrations against the new database:
-   ```bash
-   npx prisma migrate dev --name postgres_init
-   npm run db:seed
-   ```
+`category` is stored as a validated string rather than a native Prisma enum — kept
+that way for provider portability, not because Postgres requires it.
 
 ## Notes on the Financial Health Score
 

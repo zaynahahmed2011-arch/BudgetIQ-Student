@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { Wallet, TrendingDown, PiggyBank, Receipt, ArrowRight } from "lucide-react";
+import { Wallet, TrendingDown, PiggyBank, Receipt, ArrowRight, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { isAiConfigured } from "@/lib/ai";
 import { recordDailyScoreSnapshot } from "@/lib/finance-data";
 import { formatCurrency } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -8,6 +10,7 @@ import { CategoryChart } from "@/components/dashboard/category-chart";
 import { HealthScoreCard } from "@/components/dashboard/health-score-card";
 import { QuickAddBar } from "@/components/quick-add-bar";
 import { TransactionRow } from "@/components/transaction-row";
+import { ChatWindow } from "@/components/assistant/chat-window";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { buttonVariants } from "@/components/ui/button";
@@ -16,7 +19,14 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const snapshot = await recordDailyScoreSnapshot(userId);
+  const [snapshot, chatHistory] = await Promise.all([
+    recordDailyScoreSnapshot(userId),
+    prisma.chatMessage.findMany({
+      where: { userId },
+      orderBy: { createdAt: "asc" },
+      take: 40,
+    }),
+  ]);
   const { user, totalSpentThisMonth, remainingBudget, spendingByCategory, goals, scoreBreakdown, recentTransactions } =
     snapshot;
 
@@ -30,7 +40,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">Hey {user.name?.split(" ")[0] ?? "there"} 👋</h2>
+        <h2 className="text-2xl font-black tracking-tight">Hey {user.name?.split(" ")[0] ?? "there"} 👋</h2>
         <p className="text-sm text-muted-foreground">Here&apos;s where your money stands this month.</p>
       </div>
 
@@ -120,6 +130,30 @@ export default async function DashboardPage() {
       </div>
 
       <HealthScoreCard score={scoreBreakdown.score} breakdown={scoreBreakdown} />
+
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-1.5">
+            <Sparkles className="size-4 text-primary" /> AI Assistant
+          </CardTitle>
+          <Link
+            href="/assistant"
+            className={buttonVariants({ variant: "ghost", size: "sm" })}
+          >
+            Full chat <ArrowRight className="size-3.5" />
+          </Link>
+        </CardHeader>
+        <CardContent>
+          <ChatWindow
+            initialMessages={chatHistory.map((m) => ({
+              role: m.role as "user" | "assistant",
+              content: m.content,
+            }))}
+            aiConfigured={isAiConfigured()}
+            className="h-[420px]"
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">

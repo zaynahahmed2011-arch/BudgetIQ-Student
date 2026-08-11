@@ -21,9 +21,11 @@ const SUGGESTIONS = [
 export function ChatWindow({
   initialMessages,
   aiConfigured,
+  className,
 }: {
   initialMessages: ChatMessage[];
   aiConfigured: boolean;
+  className?: string;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -89,7 +91,12 @@ export function ChatWindow({
   }
 
   return (
-    <div className="flex h-[calc(100vh-11rem)] flex-col rounded-2xl border border-border bg-card md:h-[calc(100vh-8rem)]">
+    <div
+      className={cn(
+        "flex flex-col rounded-2xl border border-border bg-card",
+        className ?? "h-[calc(100vh-11rem)] md:h-[calc(100vh-8rem)]"
+      )}
+    >
       <div ref={scrollRef} className="scrollbar-thin flex-1 overflow-y-auto p-4 md:p-6">
         {messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
