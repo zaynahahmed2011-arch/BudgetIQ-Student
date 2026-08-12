@@ -23,9 +23,6 @@ export function LandingNav() {
           <Link href="/sign-in" className={buttonVariants({ variant: "ghost", size: "sm" })}>
             Sign in
           </Link>
-          <Link href="/sign-up" className={buttonVariants({ size: "sm" })}>
-            Get started
-          </Link>
         </div>
       </div>
     </header>
