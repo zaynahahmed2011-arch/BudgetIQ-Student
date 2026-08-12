@@ -16,6 +16,7 @@ export function LandingNav() {
           <a href="#features" className="hover:text-foreground">Features</a>
           <a href="#how-it-works" className="hover:text-foreground">How it works</a>
           <a href="#score" className="hover:text-foreground">Health Score</a>
+          <Link href="/pricing" className="hover:text-foreground">Pricing</Link>
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />

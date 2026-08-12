@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { signOut } from "next-auth/react";
-import { LogOut, Save } from "lucide-react";
+import { LogOut, Save, Sparkles } from "lucide-react";
 import { CATEGORIES, CATEGORY_META, type Category } from "@/lib/categories";
+import { PLANS, type PlanId } from "@/lib/plans";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export interface CategoryLimitItem {
@@ -19,16 +22,19 @@ export interface CategoryLimitItem {
 export function SettingsClient({
   name,
   email,
+  plan,
   initialMonthlyBudget,
   initialCurrency,
   initialCategoryLimits,
 }: {
   name: string;
   email: string;
+  plan: string;
   initialMonthlyBudget: number;
   initialCurrency: string;
   initialCategoryLimits: CategoryLimitItem[];
 }) {
+  const currentPlan = PLANS[plan as PlanId] ?? PLANS.free;
   const [monthlyBudget, setMonthlyBudget] = useState(String(initialMonthlyBudget));
   const [currency, setCurrency] = useState(initialCurrency);
   const [limits, setLimits] = useState<Record<string, string>>(() => {
@@ -83,6 +89,25 @@ export function SettingsClient({
             </div>
             <ThemeToggle />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-1.5">
+              <Sparkles className="size-4 text-primary" /> Plan
+            </CardTitle>
+            <CardDescription>{currentPlan.tagline}</CardDescription>
+          </div>
+          <Badge variant={plan === "free" ? "secondary" : "default"} className="text-sm">
+            {currentPlan.name}
+          </Badge>
+        </CardHeader>
+        <CardContent>
+          <Link href="/pricing" className={buttonVariants({ variant: "outline" })}>
+            {plan === "free" ? "View plans & upgrade" : "Manage plan"}
+          </Link>
         </CardContent>
       </Card>
 

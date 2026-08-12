@@ -8,6 +8,7 @@ import {
   Sparkles,
   PiggyBank,
   BarChart3,
+  Crown,
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { href: "/assistant", label: "AI Assistant", icon: Sparkles },
   { href: "/goals", label: "Savings Goals", icon: PiggyBank },
   { href: "/reports", label: "Reports", icon: BarChart3 },
+  { href: "/pricing", label: "Plans & Upgrade", icon: Crown },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

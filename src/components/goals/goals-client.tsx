@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { Plus, Trash2, TrendingUp, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,13 +32,16 @@ const EMOJI_OPTIONS = ["🎯", "💻", "📱", "🎓", "✈️", "🛟", "🏠",
 export function GoalsClient({
   initialGoals,
   currency,
+  maxGoals,
 }: {
   initialGoals: GoalItem[];
   currency: string;
+  maxGoals: number | null; // null = unlimited
 }) {
   const [goals, setGoals] = useState(initialGoals);
   const [createOpen, setCreateOpen] = useState(false);
   const [contributeGoal, setContributeGoal] = useState<GoalItem | null>(null);
+  const atLimit = maxGoals != null && goals.length >= maxGoals;
 
   async function handleCreate(data: {
     name: string;
@@ -56,7 +60,8 @@ export function GoalsClient({
       }),
     });
     if (!res.ok) {
-      toast.error("Couldn't create that goal");
+      const body = await res.json().catch(() => ({}));
+      toast.error(body.error ?? "Couldn't create that goal");
       return;
     }
     const { goal } = await res.json();
@@ -93,10 +98,21 @@ export function GoalsClient({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="size-4" /> New goal
-        </Button>
+      <div className="flex items-center justify-end gap-3">
+        {atLimit && (
+          <p className="text-xs text-muted-foreground">
+            {goals.length}/{maxGoals} goals used on the Free plan
+          </p>
+        )}
+        {atLimit ? (
+          <Link href="/pricing" className={buttonVariants({})}>
+            <Lock className="size-4" /> Upgrade for more goals
+          </Link>
+        ) : (
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" /> New goal
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

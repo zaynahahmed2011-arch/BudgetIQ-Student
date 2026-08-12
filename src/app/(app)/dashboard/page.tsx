@@ -3,6 +3,7 @@ import { Wallet, TrendingDown, PiggyBank, Receipt, ArrowRight, Sparkles } from "
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAiConfigured } from "@/lib/ai";
+import { getAiMessageUsage } from "@/lib/entitlements";
 import { recordDailyScoreSnapshot } from "@/lib/finance-data";
 import { formatCurrency } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -19,13 +20,14 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [snapshot, chatHistory] = await Promise.all([
+  const [snapshot, chatHistory, aiUsage] = await Promise.all([
     recordDailyScoreSnapshot(userId),
     prisma.chatMessage.findMany({
       where: { userId },
       orderBy: { createdAt: "asc" },
       take: 40,
     }),
+    getAiMessageUsage(userId),
   ]);
   const { user, totalSpentThisMonth, remainingBudget, spendingByCategory, goals, scoreBreakdown, recentTransactions } =
     snapshot;
@@ -150,6 +152,7 @@ export default async function DashboardPage() {
               content: m.content,
             }))}
             aiConfigured={isAiConfigured()}
+            usage={aiUsage.limit === Infinity ? null : aiUsage}
             className="h-[420px]"
           />
         </CardContent>

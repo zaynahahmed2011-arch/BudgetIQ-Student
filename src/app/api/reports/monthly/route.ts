@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUserId, errorResponse } from "@/lib/api-helpers";
-import { generateWeeklySummary, isAiConfigured } from "@/lib/ai";
+import { generateMonthlyDeepDive, isAiConfigured } from "@/lib/ai";
 import { buildFinancialContext } from "@/lib/finance-data";
 import { requirePlan } from "@/lib/entitlements";
+import { startOfMonth, endOfMonth } from "@/lib/utils";
 
 export async function GET() {
   const { userId, error } = await requireUserId();
   if (error) return error;
 
-  const reports = await prisma.weeklyReport.findMany({
+  const reports = await prisma.monthlyReport.findMany({
     where: { userId: userId! },
-    orderBy: { weekStart: "desc" },
+    orderBy: { monthStart: "desc" },
     take: 12,
   });
 
@@ -35,36 +36,42 @@ export async function POST() {
     );
   }
 
-  if (!(await requirePlan(userId!, "premium"))) {
-    return errorResponse("Weekly AI reports require Premium or Pro. Upgrade to unlock them.", 402);
+  if (!(await requirePlan(userId!, "pro"))) {
+    return errorResponse("The monthly deep-dive report requires Pro. Upgrade to unlock it.", 402);
   }
 
   const now = new Date();
-  const weekStart = new Date(now.getTime() - 7 * 86400000);
+  const monthStart = startOfMonth(now);
+  const monthEnd = endOfMonth(now);
 
-  const [context, weekTransactions] = await Promise.all([
+  const [context, monthTransactions] = await Promise.all([
     buildFinancialContext(userId!),
     prisma.transaction.findMany({
-      where: { userId: userId!, date: { gte: weekStart, lte: now } },
+      where: { userId: userId!, date: { gte: monthStart, lte: monthEnd } },
     }),
   ]);
 
-  const weekSpent = weekTransactions.reduce((s, t) => s + t.amount, 0);
+  const monthSpent = monthTransactions.reduce((s, t) => s + t.amount, 0);
 
-  const result = await generateWeeklySummary({
+  const result = await generateMonthlyDeepDive({
     ...context,
-    weekSpent,
-    weekTransactionCount: weekTransactions.length,
+    monthSpent,
+    monthTransactionCount: monthTransactions.length,
   });
 
-  const report = await prisma.weeklyReport.create({
+  const combinedInsights = [
+    ...result.insights,
+    `Month-over-month: ${result.monthOverMonthComparison}`,
+  ];
+
+  const report = await prisma.monthlyReport.create({
     data: {
       userId: userId!,
-      weekStart,
-      weekEnd: now,
-      totalSpent: weekSpent,
+      monthStart,
+      monthEnd,
+      totalSpent: monthSpent,
       summary: result.summary,
-      insights: JSON.stringify(result.insights),
+      insights: JSON.stringify(combinedInsights),
       recommendations: JSON.stringify(result.recommendations),
     },
   });
@@ -72,7 +79,7 @@ export async function POST() {
   return NextResponse.json({
     report: {
       ...report,
-      insights: result.insights,
+      insights: combinedInsights,
       recommendations: result.recommendations,
     },
   });

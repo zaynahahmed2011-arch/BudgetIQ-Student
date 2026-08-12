@@ -21,6 +21,7 @@ export default async function SettingsPage() {
       <SettingsClient
         name={user.name ?? ""}
         email={user.email}
+        plan={user.plan}
         initialMonthlyBudget={user.monthlyBudget}
         initialCurrency={user.currency}
         initialCategoryLimits={categoryLimits}

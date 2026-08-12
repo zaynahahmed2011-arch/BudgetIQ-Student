@@ -1,17 +1,21 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAiConfigured } from "@/lib/ai";
+import { getAiMessageUsage } from "@/lib/entitlements";
 import { ChatWindow } from "@/components/assistant/chat-window";
 
 export default async function AssistantPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const history = await prisma.chatMessage.findMany({
-    where: { userId },
-    orderBy: { createdAt: "asc" },
-    take: 40,
-  });
+  const [history, usage] = await Promise.all([
+    prisma.chatMessage.findMany({
+      where: { userId },
+      orderBy: { createdAt: "asc" },
+      take: 40,
+    }),
+    getAiMessageUsage(userId),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -28,6 +32,7 @@ export default async function AssistantPage() {
           content: m.content,
         }))}
         aiConfigured={isAiConfigured()}
+        usage={usage.limit === Infinity ? null : usage}
       />
     </div>
   );

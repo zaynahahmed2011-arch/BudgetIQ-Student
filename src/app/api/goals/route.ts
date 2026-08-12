@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUserId, errorResponse } from "@/lib/api-helpers";
 import { createGoalSchema } from "@/lib/validations";
+import { canCreateGoal } from "@/lib/entitlements";
 
 export async function GET() {
   const { userId, error } = await requireUserId();
@@ -19,6 +20,13 @@ export async function GET() {
 export async function POST(req: Request) {
   const { userId, error } = await requireUserId();
   if (error) return error;
+
+  if (!(await canCreateGoal(userId!))) {
+    return errorResponse(
+      "Free plan is limited to 2 savings goals. Upgrade to Premium for unlimited goals.",
+      402
+    );
+  }
 
   const body = await req.json().catch(() => null);
   const parsed = createGoalSchema.safeParse(body);

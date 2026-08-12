@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { planConfig } from "@/lib/plans";
 import { GoalsClient } from "@/components/goals/goals-client";
 
 export default async function GoalsPage() {
@@ -10,6 +11,8 @@ export default async function GoalsPage() {
     prisma.user.findUniqueOrThrow({ where: { id: userId } }),
     prisma.savingsGoal.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
   ]);
+
+  const { maxGoals } = planConfig(user.plan);
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,6 +33,7 @@ export default async function GoalsPage() {
           targetDate: g.targetDate ? g.targetDate.toISOString() : null,
         }))}
         currency={user.currency}
+        maxGoals={maxGoals === Infinity ? null : maxGoals}
       />
     </div>
   );

@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { MoreVertical, Pencil, Trash2, Download, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { CATEGORIES, CATEGORY_META, type Category } from "@/lib/categories";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -20,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export interface TransactionItem {
@@ -34,9 +35,11 @@ export interface TransactionItem {
 export function TransactionsClient({
   initialTransactions,
   currency,
+  canExport,
 }: {
   initialTransactions: TransactionItem[];
   currency: string;
+  canExport: boolean;
 }) {
   const [transactions, setTransactions] = useState(initialTransactions);
   const [filter, setFilter] = useState<string>("all");
@@ -84,6 +87,22 @@ export function TransactionsClient({
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex justify-end">
+        {canExport ? (
+          <a
+            href="/api/transactions/export"
+            download
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <Download className="size-3.5" /> Export CSV
+          </a>
+        ) : (
+          <Link href="/pricing" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            <Lock className="size-3.5" /> Export CSV
+          </Link>
+        )}
+      </div>
+
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => setFilter("all")}

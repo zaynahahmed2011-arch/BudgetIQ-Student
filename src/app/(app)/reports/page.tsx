@@ -1,19 +1,27 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAiConfigured } from "@/lib/ai";
+import { planConfig } from "@/lib/plans";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScoreTrendChart } from "@/components/reports/score-trend-chart";
 import { ReportsClient } from "@/components/reports/reports-client";
+import { SubscriptionsCard } from "@/components/reports/subscriptions-card";
+import { MonthlyReportsClient } from "@/components/reports/monthly-reports-client";
 
 export default async function ReportsPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [user, reports, scores] = await Promise.all([
+  const [user, reports, monthlyReports, scores] = await Promise.all([
     prisma.user.findUniqueOrThrow({ where: { id: userId } }),
     prisma.weeklyReport.findMany({
       where: { userId },
       orderBy: { weekStart: "desc" },
+      take: 12,
+    }),
+    prisma.monthlyReport.findMany({
+      where: { userId },
+      orderBy: { monthStart: "desc" },
       take: 12,
     }),
     prisma.financialScore.findMany({
@@ -43,6 +51,11 @@ export default async function ReportsPage() {
         </CardContent>
       </Card>
 
+      <SubscriptionsCard
+        isPro={planConfig(user.plan).subscriptionDetector}
+        currency={user.currency}
+      />
+
       <ReportsClient
         initialReports={reports.map((r) => ({
           id: r.id,
@@ -55,6 +68,22 @@ export default async function ReportsPage() {
         }))}
         currency={user.currency}
         aiConfigured={isAiConfigured()}
+        hasWeeklyReports={planConfig(user.plan).weeklyReports}
+      />
+
+      <MonthlyReportsClient
+        initialReports={monthlyReports.map((r) => ({
+          id: r.id,
+          monthStart: r.monthStart.toISOString(),
+          monthEnd: r.monthEnd.toISOString(),
+          summary: r.summary,
+          insights: JSON.parse(r.insights),
+          recommendations: JSON.parse(r.recommendations),
+          totalSpent: r.totalSpent,
+        }))}
+        currency={user.currency}
+        aiConfigured={isAiConfigured()}
+        isPro={planConfig(user.plan).monthlyDeepDive}
       />
     </div>
   );

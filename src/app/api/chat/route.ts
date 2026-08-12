@@ -3,6 +3,7 @@ import { requireUserId, errorResponse } from "@/lib/api-helpers";
 import { chatMessageSchema } from "@/lib/validations";
 import { chatWithAssistant, isAiConfigured } from "@/lib/ai";
 import { buildFinancialContext } from "@/lib/finance-data";
+import { canSendAiMessage, recordAiMessageUsed } from "@/lib/entitlements";
 
 export async function POST(req: Request) {
   const { userId, error } = await requireUserId();
@@ -12,6 +13,13 @@ export async function POST(req: Request) {
     return errorResponse(
       "AI assistant isn't configured yet. Add ANTHROPIC_API_KEY to .env to enable it.",
       503
+    );
+  }
+
+  if (!(await canSendAiMessage(userId!))) {
+    return errorResponse(
+      "You've used all your AI Assistant messages this month. Upgrade to Premium for unlimited access.",
+      402
     );
   }
 
@@ -49,12 +57,15 @@ export async function POST(req: Request) {
       controller.close();
 
       if (lastUserMessage?.role === "user") {
-        await prisma.chatMessage.createMany({
-          data: [
-            { userId: userId!, role: "user", content: lastUserMessage.content },
-            { userId: userId!, role: "assistant", content: fullReply },
-          ],
-        });
+        await Promise.all([
+          prisma.chatMessage.createMany({
+            data: [
+              { userId: userId!, role: "user", content: lastUserMessage.content },
+              { userId: userId!, role: "assistant", content: fullReply },
+            ],
+          }),
+          recordAiMessageUsed(userId!),
+        ]);
       }
     },
   });

@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { planConfig } from "@/lib/plans";
 import { QuickAddBar } from "@/components/quick-add-bar";
 import { TransactionsClient } from "@/components/transactions/transactions-client";
 
@@ -36,6 +37,7 @@ export default async function TransactionsPage() {
           date: t.date.toISOString(),
         }))}
         currency={user.currency}
+        canExport={planConfig(user.plan).csvExport}
       />
     </div>
   );

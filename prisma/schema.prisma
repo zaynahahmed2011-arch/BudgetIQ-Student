@@ -26,6 +26,13 @@ model User {
   monthlyBudget Float  @default(0)
   currency      String @default("Rs.")
 
+  // Subscription plan: "free" | "premium" | "pro" — see src/lib/plans.ts for
+  // what each tier unlocks. aiMessagesUsedThisMonth/aiUsageResetAt track the
+  // free tier's AI Assistant rate limit, resetting on a rolling monthly basis.
+  plan                   String   @default("free")
+  aiMessagesUsedThisMonth Int     @default(0)
+  aiUsageResetAt         DateTime @default(now())
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -35,6 +42,7 @@ model User {
   categoryLimits CategoryBudget[]
   savingsGoals   SavingsGoal[]
   weeklyReports  WeeklyReport[]
+  monthlyReports MonthlyReport[]
   financialScores FinancialScore[]
   chatMessages   ChatMessage[]
 }
@@ -149,6 +157,24 @@ model WeeklyReport {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, weekStart])
+}
+
+// Pro-tier "deep dive" report — same shape as WeeklyReport but covers a
+// full month with more detail.
+model MonthlyReport {
+  id              String   @id @default(cuid())
+  userId          String
+  monthStart      DateTime
+  monthEnd        DateTime
+  summary         String
+  insights        String // JSON-encoded string[]
+  recommendations String // JSON-encoded string[]
+  totalSpent      Float
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, monthStart])
 }
 
 model FinancialScore {

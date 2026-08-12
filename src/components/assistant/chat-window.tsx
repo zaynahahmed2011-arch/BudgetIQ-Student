@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Sparkles, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +10,12 @@ import { cn } from "@/lib/utils";
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+}
+
+export interface AiUsage {
+  used: number;
+  limit: number;
+  remaining: number;
 }
 
 const SUGGESTIONS = [
@@ -21,23 +28,27 @@ const SUGGESTIONS = [
 export function ChatWindow({
   initialMessages,
   aiConfigured,
+  usage,
   className,
 }: {
   initialMessages: ChatMessage[];
   aiConfigured: boolean;
+  usage?: AiUsage | null;
   className?: string;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [remaining, setRemaining] = useState(usage?.remaining ?? Infinity);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const limitReached = usage != null && remaining <= 0;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
   async function sendMessage(text: string) {
-    if (!text.trim() || loading) return;
+    if (!text.trim() || loading || limitReached) return;
     const nextMessages: ChatMessage[] = [...messages, { role: "user", content: text }];
     setMessages(nextMessages);
     setInput("");
@@ -80,6 +91,8 @@ export function ChatWindow({
           return copy;
         });
       }
+
+      setRemaining((r) => (Number.isFinite(r) ? Math.max(0, r - 1) : r));
     } catch {
       setMessages((m) => [
         ...m,
@@ -150,6 +163,23 @@ export function ChatWindow({
             AI assistant isn&apos;t configured — add ANTHROPIC_API_KEY to .env to enable it.
           </p>
         )}
+        {aiConfigured && limitReached && (
+          <p className="mb-2 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning">
+            You&apos;ve used all {usage?.limit} AI Assistant messages this month.{" "}
+            <Link href="/pricing" className="font-semibold underline">
+              Upgrade to Premium
+            </Link>{" "}
+            for unlimited access.
+          </p>
+        )}
+        {aiConfigured && !limitReached && usage != null && (
+          <p className="mb-2 text-xs text-muted-foreground">
+            {remaining} of {usage.limit} AI messages left this month ·{" "}
+            <Link href="/pricing" className="text-primary hover:underline">
+              Upgrade for unlimited
+            </Link>
+          </p>
+        )}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -169,9 +199,13 @@ export function ChatWindow({
             placeholder="Ask about your budget..."
             className="min-h-11 resize-none"
             rows={1}
-            disabled={!aiConfigured || loading}
+            disabled={!aiConfigured || loading || limitReached}
           />
-          <Button type="submit" size="icon" disabled={!aiConfigured || loading || !input.trim()}>
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!aiConfigured || loading || limitReached || !input.trim()}
+          >
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
           </Button>
         </form>

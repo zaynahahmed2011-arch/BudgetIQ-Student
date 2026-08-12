@@ -226,3 +226,80 @@ export async function generateWeeklySummary(
 
   return toolUse.input as WeeklySummaryResult;
 }
+
+export interface MonthlyDeepDiveResult {
+  summary: string;
+  insights: string[];
+  recommendations: string[];
+  monthOverMonthComparison: string;
+}
+
+const monthlyDeepDiveTool: Anthropic.Tool = {
+  name: "monthly_deep_dive",
+  description:
+    "Produce a detailed monthly financial deep-dive report for a student — richer and more analytical than a weekly summary.",
+  input_schema: {
+    type: "object",
+    properties: {
+      summary: {
+        type: "string",
+        description: "A 3-4 sentence narrative overview of the student's month.",
+      },
+      insights: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "5-7 specific, detailed observations about spending patterns, trends, and habits this month.",
+      },
+      recommendations: {
+        type: "array",
+        items: { type: "string" },
+        description: "3-5 concrete, prioritized recommendations for next month.",
+      },
+      monthOverMonthComparison: {
+        type: "string",
+        description:
+          "1-2 sentences comparing this month's spending/saving behavior to what would be expected from the data given (call out if data is insufficient for a real comparison).",
+      },
+    },
+    required: ["summary", "insights", "recommendations", "monthOverMonthComparison"],
+  },
+};
+
+export async function generateMonthlyDeepDive(
+  context: FinancialContext & {
+    monthSpent: number;
+    monthTransactionCount: number;
+  }
+): Promise<MonthlyDeepDiveResult> {
+  const anthropic = getClient();
+
+  const message = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 1200,
+    system:
+      "You are a financial coach writing an in-depth monthly deep-dive report for a university student — a premium, more thorough version of a weekly recap. Always call the monthly_deep_dive tool exactly once, using only the data given. Be specific and analytical, not generic.",
+    tools: [monthlyDeepDiveTool],
+    tool_choice: { type: "tool", name: "monthly_deep_dive" },
+    messages: [
+      {
+        role: "user",
+        content: `Generate this month's deep-dive report from this data:\n\n${buildContextPrompt(
+          context
+        )}\n\nThis month specifically: spent ${context.currency} ${context.monthSpent.toFixed(
+          2
+        )} across ${context.monthTransactionCount} transactions.`,
+      },
+    ],
+  });
+
+  const toolUse = message.content.find(
+    (block): block is Anthropic.ToolUseBlock => block.type === "tool_use"
+  );
+
+  if (!toolUse) {
+    throw new Error("Failed to generate monthly deep dive.");
+  }
+
+  return toolUse.input as MonthlyDeepDiveResult;
+}
